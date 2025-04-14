@@ -11,6 +11,7 @@ import axios from "axios";
 import { useDispatch } from "react-redux";
 import { login } from "@/redux/slices/authSlice"; 
 import Cookies from "js-cookie";
+import { jwtDecode } from 'jwt-decode';
 
 const Signin = () => {
   
@@ -18,6 +19,26 @@ const Signin = () => {
   const router = useRouter();
   const [formData, setFormData] = useState({email: "", password: ""});
   const dispatch = useDispatch();
+
+
+  // Fetch userID
+  const token = Cookies.get("token") || null
+  console.log("Token from cookies:", token ? token : "No token found");
+  const fetchUser = (token) => {
+    if (!token) return null;
+    try {
+      const decodedToken = jwtDecode(token);
+      return decodedToken.userId; // Adjust based on your token structure
+  
+    } catch (error) {
+  
+  
+      console.error('Error decoding token:', error);
+      return null;
+    }
+  };
+  
+  const user = fetchUser(token);
 
 
   // Handle input changes
@@ -47,7 +68,7 @@ const Signin = () => {
         // console.log("Login successful:", response.data);
 
         dispatch(login({ 
-          user: response.data.userId, 
+          user: user, 
           token: response.data.token 
         }));
 

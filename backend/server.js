@@ -3,15 +3,33 @@ const cors = require('cors');
 const mongoose = require('mongoose');
 const dotenv = require('dotenv');
 dotenv.config({ path: './.env' })
-const nodemailer = require("nodemailer");
 
+
+
+const nodemailer = require("nodemailer");
 const app = express(); // This line MUST be present
 const User = require('./models/User');
-
+const multer = require('multer');
 const jwt = require("jsonwebtoken");
 const bcrypt = require("bcryptjs");
+const Blog = require('./models/Blogs'); // Import the Blog model
+const path = require('path');
+const authenticateUser = require('./middleware/auth');
+
+
+
+
 app.use(express.json());
 app.use(cors());
+
+const storage = multer.diskStorage({
+  destination: './uploads/',
+  filename: (req, file, cb) => {
+    cb(null, Date.now() + path.extname(file.originalname));
+  },
+});
+
+const upload = multer({ storage });
 
 
 console.log(process.env.DATABASE_URL);
@@ -171,49 +189,35 @@ app.post("/signin", async (req, res) => {
   });;
   
 
+// Route to create a blog post
+app.post('/createBlog', upload.single('image'), (req, res) => {
+  const { title, content, category, author } = req.body;
+  console.log("Received data:", req.body);
+  // If no image path is provided, default image will be used
+  const imagePath = req.file ? `/uploads/${req.file.filename}` : '/uploads/default.png';
+  console.log("Image path:", req.file);
 
-
-
-  const Blog = require('./models/Blogs'); // Import the Blog model
-  
-  // Route to create a blog post
-  app.post('/createBlog', (req, res) => {
-    const { title, content, category, author, imagePath } = req.body;
-  
-    // If no image path is provided, default image will be used
-    const image = imagePath || '/uploads/default-image.jpg';
-  
-    const newBlog = new Blog({
-      title,
-      content,
-      image,
-      category,
-      author
-    });
-  
-    newBlog.save()
-      .then(blog => res.status(201).json(blog))
-      .catch(error => res.status(400).json({ error: error.message }));
+  const newBlog = new Blog({
+    title,
+    content,
+    image: imagePath,
+    category,
+    author
   });
-  
-  app.listen(3000, () => console.log('Server running on port 3000'));
-  
 
+  newBlog.save()
+    .then(blog => res.status(201).json(blog))
+    .catch(error => res.status(400).json({ error: error.message }));
+});
 
-
-
-
-
-
-
-
-
-
-
-
-
-
-
+app.get('/myBlogs', authenticateUser, async (req, res) => {
+  try {
+    const blogs = await Blog.find({ author: req.user.userId });
+    res.json({ success: true, blogs });
+  } catch (err) {
+    res.status(500).json({ success: false, message: 'Server error' });
+  }
+}); 
 
 
 // Start Server
