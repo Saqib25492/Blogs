@@ -33,7 +33,7 @@ const Navbar = () => {
   }
 
   return (
-    <div className="w-full">
+    <div className="w-screen">
       <nav className="bg-gray-800 p-2 shadow-black/30 shadow-xl w-full">
         <div className="md:px-12 px-4 flex justify-between items-center">
           <div className="text-white text-lg font-bold">Logo</div>
