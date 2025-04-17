@@ -30,7 +30,7 @@ export default function RootLayout({ children }) {
     <StoreProvider>
       <html lang="en">
         <body
-          className={`${geistSans.variable} ${geistMono.variable} antialiased w-screen h-screen m-0 p-0 overflow-x-hidden`}
+          className={`${geistSans.variable} ${geistMono.variable} antialiased w-screen h-[95vh] m-0 p-0 overflow-x-hidden`}
         >
           <Navbar />
           {children}
