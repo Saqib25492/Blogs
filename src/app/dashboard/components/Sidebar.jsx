@@ -9,18 +9,30 @@ const Sidebar = () => {
     };
 
     return (
-        <div className={`flex flex-col gap-3 fixed       top-6 left-0 h-full bg-gray-100 transition-all duration-300 ${isOpen ? 'w-64' : 'w-24 overflow-hidden'}`}>
+        <div className={`flex flex-col gap-3 fixed top-0 left-0 h-full bg-gray-100 transition-all duration-300 ${isOpen ? 'w-64' : 'w-16 overflow-hidden'}`}>
             <button 
                 onClick={toggleSidebar} 
-                className="m-4 p-2 bg-blue-500 text-white rounded hover:bg-blue-600 transition">
-                {isOpen ? 'Close Sidebar' : 'Open Sidebar'}
+                className="absolute top-4 right-4 p-2 bg-blue-500 text-white rounded-full hover:bg-blue-600 transition">
+                {isOpen ? '←' : '→'}
             </button>
-            <div className={`p-4 ${isOpen ? 'block' : 'hidden'}`}>
+            <div className="p-4">
                 <ul className="space-y-4">
-                    <li className="hover:text-blue-500 cursor-pointer">Dashboard</li>
-                    <li className="hover:text-blue-500 cursor-pointer">Profile</li>
-                    <li className="hover:text-blue-500 cursor-pointer">Settings</li>
-                    <li className="hover:text-blue-500 cursor-pointer">Logout</li>
+                    <li className="flex items-center gap-2 hover:text-blue-500 cursor-pointer">
+                        <span>🏠</span>
+                        {isOpen && <span>Dashboard</span>}
+                    </li>
+                    <li className="flex items-center gap-2 hover:text-blue-500 cursor-pointer">
+                        <span>👤</span>
+                        {isOpen && <span>Profile</span>}
+                    </li>
+                    <li className="flex items-center gap-2 hover:text-blue-500 cursor-pointer">
+                        <span>⚙️</span>
+                        {isOpen && <span>Settings</span>}
+                    </li>
+                    <li className="flex items-center gap-2 hover:text-blue-500 cursor-pointer">
+                        <span>🚪</span>
+                        {isOpen && <span>Logout</span>}
+                    </li>
                 </ul>
             </div>
         </div>
