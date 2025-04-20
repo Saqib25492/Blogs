@@ -38,7 +38,7 @@ const Signin = () => {
     }
   };
   
-  const user = fetchUser(token);
+
 
 
   // Handle input changes
@@ -66,7 +66,7 @@ const Signin = () => {
         toast.success("Login successful!");
 
         // console.log("Login successful:", response.data);
-
+        const user = fetchUser(token);
         dispatch(login({ 
           user: user, 
           token: response.data.token 

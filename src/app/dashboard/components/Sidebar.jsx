@@ -1,15 +1,12 @@
-'use client';
+'use client'
+
 import React, { useState } from 'react';
 
-const Sidebar = () => {
-    const [isOpen, setIsOpen] = useState(true);
+const Sidebar = ({isOpen, toggleSidebar}) => {
 
-    const toggleSidebar = () => {
-        setIsOpen(!isOpen);
-    };
 
     return (
-        <div className={`flex flex-col gap-3 fixed top-0 left-0 h-full bg-gray-100 transition-all duration-300 ${isOpen ? 'w-64' : 'w-16 overflow-hidden'}`}>
+        <div className={`flex flex-col gap-3 fixed left-0 h-full bg-gray-100 transition-all duration-300 ${isOpen ? 'w-64' : 'w-16 overflow-hidden'}`}>
             <button 
                 onClick={toggleSidebar} 
                 className="absolute top-4 right-4 p-2 bg-blue-500 text-white rounded-full hover:bg-blue-600 transition">

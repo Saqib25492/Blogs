@@ -11,7 +11,7 @@ const Navbar = () => {
 
   const sidebar = useRef(null);
   const [SideBaropen, setSideBaropen] = useState(false);
-  const { token } = useSelector((state) => state.auth);
+  const { user } = useSelector((state) => state.auth);
   const dispatch = useDispatch();
   const router = useRouter();
 
@@ -33,7 +33,7 @@ const Navbar = () => {
   }
 
   return (
-    <div className="w-screen">
+    <div className="w-screen sticky top-0 z-50">
       <nav className="bg-gray-800 p-2 shadow-black/30 shadow-xl w-full">
         <div className="md:px-12 px-4 flex justify-between items-center">
           <div className="text-white text-lg font-bold">Logo</div>
@@ -51,7 +51,7 @@ const Navbar = () => {
               Contact
             </Link>
             
-            {token ? (
+            {user ? (
               <button onClick={handleLogout} className="text-white">
                 Logout
               </button>
