@@ -21,24 +21,6 @@ const Signin = () => {
   const dispatch = useDispatch();
 
 
-  // Fetch userID
-  const token = Cookies.get("token") || null
-  console.log("Token from cookies:", token ? token : "No token found");
-  const fetchUser = (token) => {
-    if (!token) return null;
-    try {
-      const decodedToken = jwtDecode(token);
-      return decodedToken.userId; // Adjust based on your token structure
-  
-    } catch (error) {
-  
-  
-      console.error('Error decoding token:', error);
-      return null;
-    }
-  };
-  
-
 
 
   // Handle input changes
@@ -65,14 +47,14 @@ const Signin = () => {
         setFormData({email: "", password: ""}); 
         toast.success("Login successful!");
 
-        // console.log("Login successful:", response.data);
-        const user = fetchUser(token);
+        // console.log("Login successful:", response.data.userId);
+
         dispatch(login({ 
-          user: user, 
-          token: response.data.token 
+          user: response.data.userId, 
+        
         }));
 
-        Cookies.set("token", response.data.token, { expires: 7 }); // Set token in cookies
+        
         router.push("/"); // Redirect only if login is successful
       
       

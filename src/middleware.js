@@ -8,6 +8,7 @@ const SECRET = new TextEncoder().encode(process.env.SECRET_KEY);
 export async function middleware(req) {
   const token = req.cookies.get("token")?.value;
   console.log("Token from cookies:", token);
+  
   if (token) {
     try {
       const { payload } = await jwtVerify(token, SECRET);

@@ -15,6 +15,7 @@ const bcrypt = require("bcryptjs");
 const Blog = require('./models/Blogs'); // Import the Blog model
 const path = require('path');
 const authenticateUser = require('./middleware/auth');
+const { useReducedMotion } = require('framer-motion');
 
 
 
@@ -180,8 +181,17 @@ app.post("/signin", async (req, res) => {
         process.env.SECRET_KEY, // Uses the environment variable
         { expiresIn: "7d" }
       );
+
+          // Set the token in an HTTP-only cookie (adjust for local dev)
+      res.cookie("token", token, {
+      httpOnly: true, // Prevents client-side JS access to the cookie
+      secure: false, // Don't use HTTPS in local development
+      sameSite: "Strict", // Helps protect from CSRF attacks
+      maxAge: 7 * 24 * 60 * 60 * 1000, // 7 days in milliseconds
+      });
   
-      res.json({ success: true, message: "Login successful", token });
+      res.json({ success: true, message: "Login successful", data: { userId: user._id, useremail: user.email, active: user.isActive } });
+      
     } catch (error) {
       console.error("Signin error:", error);
       res.status(500).json({ success: false, message: "Server error" });
