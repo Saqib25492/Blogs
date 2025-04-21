@@ -21,7 +21,11 @@ const { useReducedMotion } = require('framer-motion');
 
 
 app.use(express.json());
-app.use(cors());
+app.use(cors({
+  origin: "http://localhost:3000", // Your frontend's origin URL
+  credentials: true // This will allow cookies to be sent
+}));
+
 
 const storage = multer.diskStorage({
   destination: './uploads/',
@@ -186,7 +190,7 @@ app.post("/signin", async (req, res) => {
       res.cookie("token", token, {
       httpOnly: true, // Prevents client-side JS access to the cookie
       secure: false, // Don't use HTTPS in local development
-      sameSite: "Strict", // Helps protect from CSRF attacks
+      sameSite: "strict", // Helps protect from CSRF attacks
       maxAge: 7 * 24 * 60 * 60 * 1000, // 7 days in milliseconds
       });
   
@@ -197,6 +201,17 @@ app.post("/signin", async (req, res) => {
       res.status(500).json({ success: false, message: "Server error" });
     }
   });;
+
+
+app.post("/logout", (req, res) => {
+  res.clearCookie("token", {
+    httpOnly: true,
+    secure: process.env.NODE_ENV === 'production', // Use 'true' in production with HTTPS
+    sameSite: 'strict',
+    path: '/' // Ensure it's available for the whole domain
+  });
+  res.json({ message: "Logged out successfully" });
+});
   
 
 // Route to create a blog post

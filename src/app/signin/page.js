@@ -41,16 +41,21 @@ const Signin = () => {
       const response = await axios.post("http://localhost:5000/signin", {
         "email": email,
         "password": password
-      });
+      },
+      { 
+        withCredentials: true // This ensures cookies (like the JWT token) are included with the request
+      }
+      
+    );
   
       if (response.data.success) {
         setFormData({email: "", password: ""}); 
         toast.success("Login successful!");
 
-        // console.log("Login successful:", response.data.userId);
+        const user = response.data.data.userId;
 
         dispatch(login({ 
-          user: response.data.userId, 
+          user: user 
         
         }));
 

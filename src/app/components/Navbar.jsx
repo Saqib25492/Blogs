@@ -6,6 +6,7 @@ import { useState, useRef, useEffect } from "react";
 import { useSelector, useDispatch } from "react-redux";
 import { logout } from "@/redux/slices/authSlice"; // 
 import { useRouter } from "next/navigation";
+import axios from "axios";
 
 const Navbar = () => {
 
@@ -26,11 +27,18 @@ const Navbar = () => {
   };
 
 
-  const handleLogout = () => {
-    Cookies.remove("token");
-    dispatch(logout()); // Clear token from Redux store
-    router.push("/signin"); // Redirect to sign-in page
-  }
+  const handleLogout = async () => {
+    try {
+      // Send logout request to the backend to clear the cookie
+      await axios.post('http://localhost:5000/logout', {}, { withCredentials: true });
+  
+      dispatch(logout()); // Clear user data from Redux store
+      // Redirect to sign-in page
+      router.push("/signin");
+    } catch (error) {
+      console.error("Error logging out:", error);
+    }
+  };
 
   return (
     <div className="w-screen sticky top-0 z-50">
