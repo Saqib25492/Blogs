@@ -12,7 +12,8 @@ const Navbar = () => {
 
   const sidebar = useRef(null);
   const [SideBaropen, setSideBaropen] = useState(false);
-  const { user } = useSelector((state) => state.auth);
+  const { user } = useSelector((state) => state.auth); // Access user data from Redux store
+  console.log("User from Redux in Navbar:", user); // Log the user data for debugging
   const dispatch = useDispatch();
   const router = useRouter();
 

@@ -15,7 +15,8 @@ const bcrypt = require("bcryptjs");
 const Blog = require('./models/Blogs'); // Import the Blog model
 const path = require('path');
 const authenticateUser = require('./middleware/auth');
-const { useReducedMotion } = require('framer-motion');
+const verifyUser = require('./middleware/authenticateUser');
+const cookieParser = require('cookie-parser');
 
 
 
@@ -26,6 +27,7 @@ app.use(cors({
   credentials: true // This will allow cookies to be sent
 }));
 
+app.use(cookieParser());
 
 const storage = multer.diskStorage({
   destination: './uploads/',
@@ -211,6 +213,27 @@ app.post("/logout", (req, res) => {
     path: '/' // Ensure it's available for the whole domain
   });
   res.json({ message: "Logged out successfully" });
+});
+
+
+app.get('/verifyUser', verifyUser, (req, res) => {
+  try {
+    const user = req.user; // The user will be available after authentication
+    res.json({
+      success: true,
+      message: 'User is verified',
+      user: {
+        id: user._id,
+        name: user.name,
+        email: user.email,
+        isActive: user.isActive,
+        // Any other user data you want to return
+      },
+    });
+  } catch (error) {
+    console.error('Verification error:', error);
+    res.status(500).json({ success: false, message: 'Server error during verification' });
+  }
 });
   
 
