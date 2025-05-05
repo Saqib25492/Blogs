@@ -8,18 +8,13 @@ import { openModal, closeModal} from '@/redux/slices/modalSlice';
 const AddBlogButton = () => {
     const dispatch = useDispatch();
     const { isOpen } = useSelector((state) => state.modal);
-    const token = useSelector((state) => state.auth.token);
-
-    
-
-
-
+    const user = useSelector((state) => state.auth.user);
 
     const handleClick = () => {
         dispatch(openModal());
     };
 
-    if (!token) return null; // Don't render the button if token is not present
+    if (!user) return null; // Don't render the button if token is not present
 
     return (
         <div className="fixed bottom-4 right-12 z-50" >

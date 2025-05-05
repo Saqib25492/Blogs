@@ -52,6 +52,8 @@ const Signin = () => {
         setFormData({email: "", password: ""}); 
         toast.success("Login successful!");
 
+        console.log("Login successful:", response.data);
+
         const user = response.data.data.userId;
 
         dispatch(login({ 

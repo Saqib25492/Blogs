@@ -1,9 +1,27 @@
+'use client';
+
+import axios from "axios";
 import Link from "next/link";
 import Card from "@/app/components/BlogCard";
-
+import { useEffect, useState } from "react";
 
 
 export default function Home() {
+  const [posts, setPosts] = useState([]);
+
+  useEffect(() => {
+    const fetchPosts = async () => {
+      try {
+        const res = await axios.get("http://localhost:5000/blogs");
+        setPosts(res.data.blogs);
+      } catch (err) {
+        console.error("Error fetching posts:", err);
+      }
+    };
+
+    fetchPosts();
+  }, []);
+
   return (
     <div className="mt-5">
       <h1 className="font-bold text-3xl mt-2 mb-2 w-[70vw] mx-auto">Saqib's Blog: Your Ultimate Writing Resources</h1>
@@ -30,7 +48,11 @@ export default function Home() {
       </div>
       <div className="card_container grid grid-cols-autofill gap-4 p-5 bg-gray-200 shadow-[0px_5px_15px_rgba(0,0,0,0.35)] rounded-md w-[70vw] mx-auto mt-4 ">
 
-      
+        {posts.length > 0 ? (
+          posts.map((post) => <Card key={post._id} post={post} />)
+        ) : (
+          <p>No Blogs Found</p>
+        )}
 
 
       </div>

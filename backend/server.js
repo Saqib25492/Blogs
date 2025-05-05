@@ -258,6 +258,19 @@ app.post('/createBlog', upload.single('image'), (req, res) => {
     .catch(error => res.status(400).json({ error: error.message }));
 });
 
+
+app.get('/blogs', async (req, res) => {
+  try {
+    const blogs = await Blog.find();
+    res.json({ success: true, blogs });
+  } catch (err) {
+    res.status(500).json({ success: false, message: 'Server error' });
+  }
+}
+);
+
+app.use("/uploads", express.static(path.join(__dirname, "uploads")));
+
 app.get('/myBlogs', authenticateUser, async (req, res) => {
   try {
     const blogs = await Blog.find({ author: req.user.userId });

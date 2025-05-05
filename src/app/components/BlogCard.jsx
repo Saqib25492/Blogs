@@ -6,7 +6,7 @@ const Card = ({ post }) => {
       <div className="image_container relative h-32 overflow-hidden">
         <img
           className="absolute w-full h-full object-cover object-center"
-          src={post.image}
+          src={`http://localhost:5000${post.image}`}
           alt={post.title}
         />
       </div>

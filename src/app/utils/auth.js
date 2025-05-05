@@ -8,7 +8,7 @@ export const checkUserAuthentication = async () => {
     });
 
     if (response.data.success) {
-      return { user: response.data.user }; 
+      return { user: response.data.user.id }; 
     } else {
       return { user: null };
     }

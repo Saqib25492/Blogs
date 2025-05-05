@@ -45,7 +45,9 @@ const handleAddBlog = async () => {
     try {
         const response = await axios.post(
         "http://localhost:5000/createBlog",
-        formData);
+        formData,
+        { withCredentials: true }
+    );
         
         toast.success("Blog added successfully!");
 
