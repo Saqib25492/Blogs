@@ -13,17 +13,17 @@ export async function middleware(req) {
   const isAuthPage = ["/signin", "/signup"].includes(pathname);
   const isProtectedPage = ["/", "/dashboard"].some((route) => pathname.startsWith(route));
 
-  // ✅ Allow public access to auth pages even if no token
+  // Allow public access to auth pages even if no token
   if (isAuthPage && !token) {
     return NextResponse.next();
   }
 
-  // ✅ If there's a token, verify it
+  // If there's a token, verify it
   if (token) {
     try {
       const { payload } = await jwtVerify(token, SECRET);
 
-      // ✅ Token valid
+      // Token valid
       if (isAuthPage) {
         // Prevent signed-in users from visiting /signin or /signup
         return NextResponse.redirect(new URL("/", req.url));
@@ -42,12 +42,12 @@ export async function middleware(req) {
     }
   }
 
-  // ❌ No token and trying to access a protected page
+  // No token and trying to access a protected page
   if (!token && isProtectedPage) {
     return NextResponse.redirect(new URL("/signin", req.url));
   }
 
-  // ✅ All other cases
+  // All other cases
   return NextResponse.next();
 }
 

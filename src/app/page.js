@@ -1,5 +1,5 @@
 import Link from "next/link";
-import Card from "./Card/page";
+import Card from "@/app/components/BlogCard";
 
 
 
@@ -28,7 +28,12 @@ export default function Home() {
             </ol>
           </div>
       </div>
-      <Card />
+      <div className="card_container grid grid-cols-autofill gap-4 p-5 bg-gray-200 shadow-[0px_5px_15px_rgba(0,0,0,0.35)] rounded-md w-[70vw] mx-auto mt-4 ">
+
+      
+
+
+      </div>
         
      
     </div>
