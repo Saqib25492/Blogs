@@ -44,7 +44,7 @@ const handleAddBlog = async () => {
     formData.append("image", blogdata.image); // Attach file
     try {
         const response = await axios.post(
-        "http://localhost:5000/createBlog",
+        "http://localhost:5000/blogs/createBlog",
         formData,
         { withCredentials: true }
     );

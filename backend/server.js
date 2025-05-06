@@ -1,287 +1,155 @@
+// Load environment variables
+require('dotenv').config({ path: './.env' });
+
+// Core packages
 const express = require('express');
 const cors = require('cors');
 const mongoose = require('mongoose');
-const dotenv = require('dotenv');
-dotenv.config({ path: './.env' })
-
-
-
-const nodemailer = require("nodemailer");
-const app = express(); // This line MUST be present
-const User = require('./models/User');
-const multer = require('multer');
-const jwt = require("jsonwebtoken");
-const bcrypt = require("bcryptjs");
-const Blog = require('./models/Blogs'); // Import the Blog model
-const path = require('path');
-const authenticateUser = require('./middleware/auth');
-const verifyUser = require('./middleware/authenticateUser');
 const cookieParser = require('cookie-parser');
 
+const path = require('path');
+const bcrypt = require('bcryptjs');
+const jwt = require('jsonwebtoken');
+const nodemailer = require('nodemailer');
 
+// Models & Middleware
+const User = require('./models/User');
+const verifyUser = require('./middleware/authenticateUser');
 
-
+// App setup
+const app = express();
 app.use(express.json());
+app.use(cookieParser());
 app.use(cors({
-  origin: "http://localhost:3000", // Your frontend's origin URL
-  credentials: true // This will allow cookies to be sent
+  origin: 'http://localhost:3000',
+  credentials: true
 }));
 
-app.use(cookieParser());
-
-const storage = multer.diskStorage({
-  destination: './uploads/',
-  filename: (req, file, cb) => {
-    cb(null, Date.now() + path.extname(file.originalname));
-  },
-});
-
-const upload = multer({ storage });
+// Static files
+app.use('/uploads', express.static(path.join(__dirname, 'uploads')));
 
 
-console.log(process.env.DATABASE_URL);
-// MongoDB Connection
+// MongoDB connection
 mongoose.connect(process.env.DATABASE_URL, {
   useNewUrlParser: true,
   useUnifiedTopology: true,
 })
-.then(() => console.log("MongoDB Connected"))
-.catch(err => console.log(err));
+.then(() => console.log('MongoDB Connected'))
+.catch(err => console.log('MongoDB connection error:', err));
 
-// Test Route
-app.get("/", (req, res) => {
-  res.send("Backend is running...");
+// Basic test route
+app.get('/', (req, res) => {
+  res.send('Backend is running...');
 });
 
-// User Route
-app.get("/users", async (req, res) => {
-  const users = await prisma.user.findMany();
-  res.json(users);
-});
-
-
+// User registration
 app.post('/register', async (req, res) => {
-    try {
-      const { name, email, password } = req.body;
-  
-      // Basic validation
-      if (!name || !email || !password) {
-        return res.status(400).json({ 
-          success: false,
-          message: 'Please provide name, email, and password' 
-        });
-      }
-  
-      // Check if user already exists
-      const existingUser = await User.findOne({ email });
-      if (existingUser) {
-        return res.status(400).json({
-          success: false,
-          message: 'User already exists with this email'
-        });
-      }
-  
-      // Create new user
-      const user = new User({ name, email, password });
-      user.generateActivationToken(); // Generate activation token
-      await user.save();
+  const { name, email, password } = req.body;
+  if (!name || !email || !password) {
+    return res.status(400).json({ success: false, message: 'Missing fields' });
+  }
 
-      
-      res.status(201).json({
-        success: true,
-        message: "User registered. Please check your email",
-      });   
+  const existingUser = await User.findOne({ email });
+  if (existingUser) {
+    return res.status(400).json({ success: false, message: 'User already exists' });
+  }
 
+  const user = new User({ name, email, password });
+  user.generateActivationToken();
+  await user.save();
 
-      const activationLink = `http://localhost:5000/activate/${user.activationToken}`;
-      sendActivationEmail(user.email, activationLink);
-      
+  const activationLink = `http://localhost:5000/activate/${user.activationToken}`;
+  await sendActivationEmail(user.email, activationLink);
 
-  
-    } catch (error) {
-      console.error('Registration error:', error);
-      res.status(500).json({
-        success: false,
-        message: 'Error creating user',
-        error: process.env.NODE_ENV === 'development' ? error.message : undefined
-      });
-    }
+  res.status(201).json({ success: true, message: 'User registered. Check email for activation.' });
+});
+
+// Send activation email
+const sendActivationEmail = async (email, token) => {
+  const transporter = nodemailer.createTransport({
+    service: 'gmail',
+    auth: {
+      user: process.env.EMAIL_USER,
+      pass: process.env.EMAIL_PASS,
+    },
   });
 
+  await transporter.sendMail({
+    from: process.env.EMAIL_USER,
+    to: email,
+    subject: 'Activate Your Account',
+    html: `<p>Click to activate:</p><a href="${token}">Activate</a>`,
+  });
 
-const sendActivationEmail = async (email, token) => {
-    try {
-      const transporter = nodemailer.createTransport({
-        service: "gmail",
-        auth: {
-          user: process.env.EMAIL_USER, // Your email
-          pass: process.env.EMAIL_PASS, // Your email password
-        },
-      });
-  
-  
-      await transporter.sendMail({
-        from: process.env.EMAIL_USER,
-        to: email,
-        subject: "Activate Your Account",
-        html: `<p>Click the link below to activate your account:</p>
-               <a href="${token}">Click Here</a>`,
-      });
-  
-      console.log(`Activation email sent to ${email}`);
-    } catch (error) {
-      console.error("Error sending activation email:", error);
-    }
+  console.log(`Activation email sent to ${email}`);
 };
 
+// Account activation
+app.get('/activate/:token', async (req, res) => {
+  const user = await User.findOne({ activationToken: req.params.token });
+  if (!user) return res.status(400).json({ success: false, message: 'Invalid or expired token' });
 
-  
-app.get("/activate/:token", async (req, res) => {
-    try {
-      const user = await User.findOne({ activationToken: req.params.token });
-  
-      if (!user) {
-        return res.status(400).json({ success: false, message: "Invalid or expired token" });
-      }
-  
-      user.isActive = true;
-      user.activationToken = null; // Remove token after activation
-      await user.save();
-  
-      // Redirect to login page after activation
-      res.redirect("http://localhost:3000/signin"); // Change to your frontend URL
-  
-    } catch (error) {
-      console.error("Activation error:", error);
-      res.status(500).json({ success: false, message: "Error activating account" });
-    }
-  });
+  user.isActive = true;
+  user.activationToken = null;
+  await user.save();
 
+  res.redirect('http://localhost:3000/signin');
+});
 
+// Sign in
+app.post('/signin', async (req, res) => {
+  const { email, password } = req.body;
+  const user = await User.findOne({ email });
 
-app.post("/signin", async (req, res) => {
-    try {
-      const { email, password } = req.body;
-  
-      // Check if user exists
-      const user = await User.findOne({ email });
-  
-      if (!user) {
-        return res.status(400).json({ success: false, message: "User not found" });
-      }
-  
-      // Check if user is active
-      if (!user.isActive) {
-        return res.status(403).json({ success: false, message: "Inactive user" });
-      }
-  
-      // Compare hashed password
-      const isMatch = await bcrypt.compare(password, user.password);
-      if (!isMatch) {
-        return res.status(400).json({ success: false, message: "Incorrect password" });
-      }
-  
-      // Generate JWT token
-      const token = jwt.sign(
-        { userId: user._id, email: user.email, active: user.isActive },
-        process.env.SECRET_KEY, // Uses the environment variable
-        { expiresIn: "7d" }
-      );
+  if (!user) return res.status(400).json({ success: false, message: 'User not found' });
+  if (!user.isActive) return res.status(403).json({ success: false, message: 'Inactive user' });
+  const isMatch = await bcrypt.compare(password, user.password);
 
-          // Set the token in an HTTP-only cookie (adjust for local dev)
-      res.cookie("token", token, {
-      httpOnly: true, // Prevents client-side JS access to the cookie
-      secure: false, // Don't use HTTPS in local development
-      sameSite: "strict", // Helps protect from CSRF attacks
-      maxAge: 7 * 24 * 60 * 60 * 1000, // 7 days in milliseconds
-      });
-  
-      res.json({ success: true, message: "Login successful", data: { userId: user._id, useremail: user.email, active: user.isActive } });
-      
-    } catch (error) {
-      console.error("Signin error:", error);
-      res.status(500).json({ success: false, message: "Server error" });
-    }
-  });;
+  if (!isMatch) return res.status(400).json({ success: false, message: 'Incorrect password' });
 
+  const token = jwt.sign({ userId: user._id, email: user.email, active: user.isActive }, process.env.SECRET_KEY, { expiresIn: '7d' });
 
-app.post("/logout", (req, res) => {
-  res.clearCookie("token", {
+  res.cookie('token', token, {
     httpOnly: true,
-    secure: process.env.NODE_ENV === 'production', // Use 'true' in production with HTTPS
+    secure: false,
     sameSite: 'strict',
-    path: '/' // Ensure it's available for the whole domain
+    maxAge: 7 * 24 * 60 * 60 * 1000,
   });
-  res.json({ message: "Logged out successfully" });
+
+  res.json({ success: true, message: 'Login successful', data: { userId: user._id, useremail: user.email, active: user.isActive } });
 });
 
+// Logout
+app.post('/logout', (req, res) => {
+  res.clearCookie('token', {
+    httpOnly: true,
+    secure: process.env.NODE_ENV === 'production',
+    sameSite: 'strict',
+    path: '/',
+  });
+  res.json({ message: 'Logged out successfully' });
+});
 
+// Verify user from token
 app.get('/verifyUser', verifyUser, (req, res) => {
-  try {
-    const user = req.user; // The user will be available after authentication
-    res.json({
-      success: true,
-      message: 'User is verified',
-      user: {
-        id: user._id,
-        name: user.name,
-        email: user.email,
-        isActive: user.isActive,
-        // Any other user data you want to return
-      },
-    });
-  } catch (error) {
-    console.error('Verification error:', error);
-    res.status(500).json({ success: false, message: 'Server error during verification' });
-  }
-});
-  
-
-// Route to create a blog post
-app.post('/createBlog', upload.single('image'), (req, res) => {
-  const { title, content, category, author } = req.body;
-  console.log("Received data:", req.body);
-  // If no image path is provided, default image will be used
-  const imagePath = req.file ? `/uploads/${req.file.filename}` : '/uploads/default.png';
-  console.log("Image path:", req.file);
-
-  const newBlog = new Blog({
-    title,
-    content,
-    image: imagePath,
-    category,
-    author
+  const user = req.user;
+  res.json({
+    success: true,
+    message: 'User is verified',
+    user: {
+      id: user._id,
+      name: user.name,
+      email: user.email,
+      isActive: user.isActive,
+    },
   });
-
-  newBlog.save()
-    .then(blog => res.status(201).json(blog))
-    .catch(error => res.status(400).json({ error: error.message }));
 });
 
-
-app.get('/blogs', async (req, res) => {
-  try {
-    const blogs = await Blog.find();
-    res.json({ success: true, blogs });
-  } catch (err) {
-    res.status(500).json({ success: false, message: 'Server error' });
-  }
-}
-);
-
-app.use("/uploads", express.static(path.join(__dirname, "uploads")));
-
-app.get('/myBlogs', authenticateUser, async (req, res) => {
-  try {
-    const blogs = await Blog.find({ author: req.user.userId });
-    res.json({ success: true, blogs });
-  } catch (err) {
-    res.status(500).json({ success: false, message: 'Server error' });
-  }
-}); 
+const blogRoutes = require('./routes/blog');
+app.use('/blogs', blogRoutes);
 
 
-// Start Server
+// Start server
 app.listen(process.env.PORT, () => {
   console.log(`Server running on http://localhost:${process.env.PORT}`);
 });
