@@ -9,9 +9,7 @@ import { ToastContainer, toast, Bounce } from "react-toastify";
 const AddBlogModal = () => {
     const dispatch = useDispatch();
     const isOpen = useSelector((state) => state.modal.isOpen);
-    const user = useSelector((state) => state.auth.user);
-    console.log("userID: ",user);
-    
+    const user = useSelector((state) => state.auth.user);    
 
     const [blogdata, setBlogdata] = useState({
         title: "",
