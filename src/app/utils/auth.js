@@ -6,7 +6,7 @@ export const checkUserAuthentication = async () => {
     const response = await axios.get('http://localhost:5000/verifyUser', {
       withCredentials: true,
     });
-
+    
     if (response.data.success) {
       return { user: response.data.user.id }; 
     } else {

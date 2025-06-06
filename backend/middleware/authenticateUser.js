@@ -6,7 +6,7 @@ dotenv.config();
 // Middleware to verify user authentication and check if they are active
 const authenticateUser = async (req, res, next) => {
   const token = req.cookies.token; // The token stored in the HTTP-only cookie
-  console.log("Token from cookie in auth middleware:", token); // Log the token for debugging
+  // console.log("Token from cookie in auth middleware:", token); // Log the token for debugging
   if (!token) {
     return res.status(401).json({ success: false, message: 'Token is missing or expired' });
   }

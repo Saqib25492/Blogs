@@ -4,10 +4,15 @@ import axios from "axios";
 import Link from "next/link";
 import Card from "@/app/components/BlogCard";
 import { useEffect, useState } from "react";
+import { useSelector } from "react-redux";
 
 
 export default function Home() {
   const [posts, setPosts] = useState([]);
+
+  const loading = useSelector((state) => state.auth.loading);
+
+
 
   useEffect(() => {
     const fetchPosts = async () => {
@@ -21,6 +26,8 @@ export default function Home() {
 
     fetchPosts();
   }, []);
+
+
 
   return (
     <div className="mt-5">

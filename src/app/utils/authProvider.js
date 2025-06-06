@@ -11,7 +11,7 @@ const ClientWrapper = () => {
   useEffect(() => {
     const verify = async () => {
       const { user } = await checkUserAuthentication();
-      console.log("User from authProvider:", user); // Log the user data for debugging
+      // console.log("User from authProvider:", user); // Log the user data for debugging
       if (user) {
         dispatch(login({ user }));
       } else {

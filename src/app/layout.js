@@ -5,6 +5,7 @@
   import AddBlogButton from "./components/AddBlogButton";
   import AddBlogModal from "./components/AddBlogModal";
   import ClientWrapper from "./utils/authProvider";
+  import ClientLayoutWrapper from './utils/ClientLayoutWrapper.js';
   
 
   const geistSans = Geist({
@@ -34,11 +35,13 @@
             className={`${geistSans.variable} ${geistMono.variable} antialiased w-screen h-[95vh] m-0 p-0 overflow-x-hidden`}
           >
             <ClientWrapper />
+            <ClientLayoutWrapper>
+   
             <Navbar />
             {children}
             <AddBlogModal />
             <AddBlogButton />
-            
+            </ClientLayoutWrapper>         
           </body>
         </html>
       </StoreProvider>
